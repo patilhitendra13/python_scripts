@@ -24,10 +24,7 @@ def write_table_in_excel(columns,op,starting_cell,sheet,insert=False,color_fill=
         curr_row = starting_cell[1]
         sheet[starting_cell[0]+str(curr_row)]=col
         sheet[starting_cell[0]+str(curr_row)].border=border
-        if insert :
-            sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
-        else :
-            sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
+        sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
         curr_row+=1
         if n==0 and insert:
             sheet.insert_rows(curr_row)
