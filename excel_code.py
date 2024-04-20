@@ -31,7 +31,7 @@ wb = openpyxl.load_workbook(result_sheet_path)
 
 ## write values in cell
 # # Select the worksheet
-sheet = wb['Sheet2']  # Replace 'Sheet1' with the name of your sheet
+sheet = wb['Sheet2']  # Replace 'Sheet1' with the name of your sheet.
 
 # # Write to a specific cell
 # sheet['d8'] = 'Hello, New World!'  # Write 'Hello, World!' to cell A1
