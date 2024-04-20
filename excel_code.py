@@ -16,6 +16,30 @@ connection = snowflake.connector.connect(
 
 result_sheet_path=r"C:\Users\patil\OneDrive\Documents\Demo_sheet.xlsx"
 
+def write_table_in_excel(columns,op,starting_cell,sheet,insert=False,color_fill='FFFF00'):
+    
+
+    for n,col in enumerate(columns):
+        curr_row = starting_cell[1]
+        sheet[starting_cell[0]+str(curr_row)]=col
+        sheet[starting_cell[0]+str(curr_row)].border=border
+        if insert :
+            sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
+        else :
+            sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
+        curr_row+=1
+        if n==0 and insert:
+            sheet.insert_rows(curr_row)
+        
+        for val in op[col]:
+            sheet[starting_cell[0]+str(curr_row)]=val
+            sheet[starting_cell[0]+str(curr_row)].border=border
+            curr_row+=1
+            if n==0 and insert:
+                sheet.insert_rows(curr_row)
+
+        starting_cell[0]=chr(ord(starting_cell[0])+1)
+
 conn = connection.cursor()
 
 border = Border(top=Side(style='thin'),
@@ -23,8 +47,11 @@ border = Border(top=Side(style='thin'),
                 left=Side(style='thin'),
                 right=Side(style='thin'))
 
-fill = PatternFill(start_color='40bce6',  # Yellow color
+def fill_color(color) :
+    fill = PatternFill(start_color=color,
                    fill_type='solid')
+    
+    return fill
 
 # Load the workbook
 wb = openpyxl.load_workbook(result_sheet_path)
@@ -58,7 +85,7 @@ sheet = wb['Sheet2']  # Replace 'Sheet1' with the name of your sheet.
 
 table_name = "hiten.test.dup_test"
 
-query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}'"
+query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
 
 
 conn.execute(query)
@@ -67,25 +94,33 @@ op = conn.fetch_pandas_all()
 
 columns = op.columns.to_list()
 
-starting_cell = ['d',5]
 
-for n,col in enumerate(columns):
+write_table_in_excel(columns,op,starting_cell=['d',5],sheet=sheet,insert=True,color_fill='40bce6')
+
+write_table_in_excel(columns,op,starting_cell=['h',5],sheet=sheet,color_fill='e640d5')
+
+print(op.shape)
+
+starting_cell=['l',5]
+src_col,tgt_col = 'd','h'
+
+for cnt,col in enumerate(columns):
     curr_row = starting_cell[1]
+
     sheet[starting_cell[0]+str(curr_row)]=col
     sheet[starting_cell[0]+str(curr_row)].border=border
-    sheet[starting_cell[0]+str(curr_row)].fill=fill
+    sheet[starting_cell[0]+str(curr_row)].fill=fill_color('40e64e')
+
     curr_row+=1
-    if n==0:
-        sheet.insert_rows(curr_row)
-    
-    for val in op[col]:
-        sheet[starting_cell[0]+str(curr_row)]=val
-        sheet[starting_cell[0]+str(curr_row)].border=border
-        curr_row+=1
-        if n==0:
-            sheet.insert_rows(curr_row)
+
+    for i in range(curr_row,curr_row+op.shape[0]):
+        formula = f"=exact({src_col+str(i)},{tgt_col+str(i)})" if cnt!=len(columns)-1 else f"={src_col+str(i)}>={tgt_col+str(i)}"
+        sheet[starting_cell[0]+str(i)]=formula
+        sheet[starting_cell[0]+str(i)].border=border
 
     starting_cell[0]=chr(ord(starting_cell[0])+1)
+    src_col=chr(ord(src_col)+1)
+    tgt_col=chr(ord(tgt_col)+1)
 
 # Save the workbook
 wb.save(result_sheet_path)
