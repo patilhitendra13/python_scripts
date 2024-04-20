@@ -7,6 +7,7 @@ from openpyxl.styles import Border, Side , PatternFill
 
 connection = snowflake.connector.connect(
     user='patilhitendra13',
+    # authenticator = 'externalbrowser',
     password='Patilhitendra13',
     account='kf94287.ap-south-1.aws',
     warehouse='COMPUTE_WH',
@@ -85,6 +86,8 @@ sheet = wb['Sheet2']  # Replace 'Sheet1' with the name of your sheet.
 
 table_name = "hiten.test.dup_test"
 
+
+
 query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
 
 
@@ -97,9 +100,18 @@ columns = op.columns.to_list()
 
 write_table_in_excel(columns,op,starting_cell=['d',5],sheet=sheet,insert=True,color_fill='40bce6')
 
-write_table_in_excel(columns,op,starting_cell=['h',5],sheet=sheet,color_fill='e640d5')
+table_name = "hiten.test.dup_test_clone"
 
-print(op.shape)
+query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
+
+
+conn.execute(query)
+
+op = conn.fetch_pandas_all()
+
+write_table_in_excel(op.columns.to_list(),op,starting_cell=['h',5],sheet=sheet,color_fill='e640d5')
+
+# print(op.shape)
 
 starting_cell=['l',5]
 src_col,tgt_col = 'd','h'
