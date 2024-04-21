@@ -21,7 +21,7 @@ def write_records_to_excel(data,worksheet,start_cell,insert=False,color_fill='FF
     # Convert the DataFrame to rows
     rows = list(dataframe_to_rows(data, index=False, header=False))
     if insert :
-        num_rows_to_insert = len(rows)+1
+        num_rows_to_insert = len(rows)+3
         worksheet.insert_rows(start_row, amount=num_rows_to_insert)
 
     # Print column names
@@ -94,6 +94,9 @@ wb = openpyxl.load_workbook(result_sheet_path)
 # start_cell = 'c8'
 
 write_records_to_excel(data,worksheet=wb['Sheet4'],start_cell='c8',insert=True,color_fill='40bce6')
+
+new_start_cell = data.shape[0]+8
+write_records_to_excel(data,worksheet=wb['Sheet4'],start_cell='c'+str(new_start_cell+4),insert=True,color_fill='FF0000')
 
 # Save the workbook
 wb.save(result_sheet_path)
