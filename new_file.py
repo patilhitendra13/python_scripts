@@ -28,3 +28,5 @@ sheet.add_image(img, 'A1')
 
 # Save the changes to the Excel file
 wb.save(excel_file)
+
+

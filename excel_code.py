@@ -3,6 +3,8 @@ import snowflake.connector # pip install snowflake-connector-python
 import pandas # pip install pandas
 # pip install "snowflake-connector-python[pandas]"
 
+from dataframe_test import write_records_to_excel
+
 from openpyxl.styles import Border, Side , PatternFill
 
 connection = snowflake.connector.connect(
@@ -17,26 +19,27 @@ connection = snowflake.connector.connect(
 
 result_sheet_path=r"C:\Users\patil\OneDrive\Documents\Demo_sheet.xlsx"
 
-def write_table_in_excel(columns,op,starting_cell,sheet,insert=False,color_fill='FFFF00'):
+# def write_table_in_excel(columns,op,starting_cell,sheet,insert=False,color_fill='FFFF00'):
     
+#     print(starting_cell)
 
-    for n,col in enumerate(columns):
-        curr_row = starting_cell[1]
-        sheet[starting_cell[0]+str(curr_row)]=col
-        sheet[starting_cell[0]+str(curr_row)].border=border
-        sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
-        curr_row+=1
-        if n==0 and insert:
-            sheet.insert_rows(curr_row)
+#     for n,col in enumerate(columns):
+#         curr_row = starting_cell[1]
+#         sheet[starting_cell[0]+str(curr_row)]=col
+#         sheet[starting_cell[0]+str(curr_row)].border=border
+#         sheet[starting_cell[0]+str(curr_row)].fill=fill_color(color_fill)
+#         curr_row+=1
+#         if n==0 and insert:
+#             sheet.insert_rows(curr_row)
         
-        for val in op[col]:
-            sheet[starting_cell[0]+str(curr_row)]=val
-            sheet[starting_cell[0]+str(curr_row)].border=border
-            curr_row+=1
-            if n==0 and insert:
-                sheet.insert_rows(curr_row)
+#         for val in op[col]:
+#             sheet[starting_cell[0]+str(curr_row)]=val
+#             sheet[starting_cell[0]+str(curr_row)].border=border
+#             curr_row+=1
+#             if n==0 and insert:
+#                 sheet.insert_rows(curr_row)
 
-        starting_cell[0]=chr(ord(starting_cell[0])+1)
+#         starting_cell[0]=chr(ord(starting_cell[0])+1)
 
 conn = connection.cursor()
 
@@ -85,7 +88,7 @@ table_name = "hiten.test.dup_test"
 
 
 
-query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
+query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from {table_name.split('.')[0]}.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
 
 
 conn.execute(query)
@@ -95,18 +98,22 @@ op = conn.fetch_pandas_all()
 columns = op.columns.to_list()
 
 
-write_table_in_excel(columns,op,starting_cell=['d',5],sheet=sheet,insert=True,color_fill='40bce6')
+# write_table_in_excel(columns,op,starting_cell=['d',5],sheet=sheet,insert=True,color_fill='40bce6')
+
+write_records_to_excel(op,worksheet=wb['Sheet2_new'],start_cell='d5',insert=True,color_fill='40bce6')
 
 table_name = "hiten.test.dup_test_clone"
 
-query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from hiten.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
+query = f"select column_name,data_type,coalesce(character_maximum_length,numeric_precision) character_maximum_length from {table_name.split('.')[0]}.information_schema.columns where lower(table_schema)='{table_name.split('.')[1].lower()}' and lower(table_name)='{table_name.split('.')[2].lower()}' order by ordinal_position"
 
 
 conn.execute(query)
 
 op = conn.fetch_pandas_all()
 
-write_table_in_excel(op.columns.to_list(),op,starting_cell=['h',5],sheet=sheet,color_fill='e640d5')
+# write_table_in_excel(op.columns.to_list(),op,starting_cell=['h',5],sheet=sheet,color_fill='e640d5')
+
+write_records_to_excel(op,worksheet=wb['Sheet2_new'],start_cell='h5',color_fill='e640d5')
 
 # print(op.shape)
 
