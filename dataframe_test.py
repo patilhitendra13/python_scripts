@@ -3,6 +3,7 @@ import snowflake.connector # pip install snowflake-connector-python
 from openpyxl.utils.dataframe import dataframe_to_rows
 import re
 from openpyxl.styles import Border, Side , PatternFill
+from openpyxl.utils import get_column_letter
 
 border_style = Border(left=Side(border_style='thin'),
                       right=Side(border_style='thin'),
@@ -80,12 +81,13 @@ def fill_color(color) :
     
     return fill
 
-query = "select * from SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.CALL_CENTER"
+query = "select CC_CALL_CENTER_SK,CC_CALL_CENTER_ID,CC_CITY,CC_CLASS,cc_company from SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.CALL_CENTER limit 10;"
 conn.execute(query)
 data = conn.fetch_pandas_all()
 
 
 wb = openpyxl.load_workbook(result_sheet_path)
+sheet = wb['Sheet4']
 
 # Select the worksheet you want to paste the DataFrame into
 # ws = wb['Sheet3']  # Or you can specify the worksheet by name: wb['Sheet1']
@@ -96,7 +98,32 @@ wb = openpyxl.load_workbook(result_sheet_path)
 write_records_to_excel(data,worksheet=wb['Sheet4'],start_cell='c8',insert=True,color_fill='40bce6')
 
 new_start_cell = data.shape[0]+8
+# print(new_start_cell)
 write_records_to_excel(data,worksheet=wb['Sheet4'],start_cell='c'+str(new_start_cell+4),insert=True,color_fill='FF0000')
+
+## comparison result
+
+new_start_cell += (data.shape[0]+5)
+
+num_rows_to_insert = data.shape[0]+5
+wb['Sheet4'].insert_rows(new_start_cell, amount=num_rows_to_insert)
+
+# wb['Sheet4']['C'+str(new_start_cell+3)] = 'Start Here'
+
+for curr_col,col in enumerate(data.columns.to_list(),3) : # 3 in enumerate means starting from column C in excel sheet
+
+    curr_row = new_start_cell + 3
+    # cell = sheet.cell(row=curr_row, column=curr_col, value=col)
+    # cell.border=border_style
+    # cell.fill = fill_color('00FFFF')
+    # curr_row+=1
+
+    for i in range(curr_row,curr_row+data.shape[0]):
+        formula = f"=EXACT({get_column_letter(curr_col)+str((i-(data.shape[0]+4)*2))},{get_column_letter(curr_col)+str((i-(data.shape[0]+4)*1))})"
+        cell = sheet.cell(row=i, column=curr_col, value=formula)
+        if i==curr_row:
+            cell.fill = fill_color('00FF00')
+        cell.border=border_style
 
 # Save the workbook
 wb.save(result_sheet_path)
